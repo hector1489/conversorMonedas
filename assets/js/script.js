@@ -1,26 +1,29 @@
-const urlApi = `https://mindicador.cl/api`
-const filterCurrencies = ['dolar', 'euro', 'uf'];
 const divResult = document.querySelector('#result');
-const selectWithCurrencies = document.querySelector('#currency')
-const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1);
+const selectWithCurrencies = document.querySelector('#currency');
 const grafico = document.getElementById('myChart');
+const convertButton = document.querySelector('#btnConvert');
+const pesos = document.querySelector('#pesos');
+
+const urlBase = 'https://mindicador.cl/api';
+const filterCurrencies = ['dolar', 'euro', 'uf'];
+
 let showgraph = '';
 
+const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1);
 
-// obtener las monedas de la API
+const getData = async (url) => {
+    const response = await fetch(url);
+    return await response.json();
+};
+
 const getCurrencies = async () => {
     try {
-        const reqCurrencies = await fetch(urlApi);
-        const resData = await reqCurrencies.json();
+        const myData = await getData(urlBase);
+        const currencyList = filterCurrencies.map((currency) => ({
+            code: myData[currency].codigo,
+            value: myData[currency].valor,
+        }));
 
-// codigo de monedas
-        const currencyList = filterCurrencies.map((currency) => {
-            return {
-                code: resData[currency].codigo,
-                value: resData[currency].valor,
-            }
-        });
-// mostrar las monedas
         currencyList.forEach((currency) => {
             const option = document.createElement('option');
             option.value = currency.value;
@@ -29,26 +32,19 @@ const getCurrencies = async () => {
         });
     } catch (error) {
         console.log(error);
-        alert('Error al Obtener las Monedas')
+        alert('Error al obtener las Monedas');
     }
 };
 
-
-// calcular el resultado
 const calcResult = (amount, currency) => {
     divResult.innerHTML = `$ ${(amount / currency).toFixed(2)} .-`;
 };
 
-//grafico
 const drawChart = async (currency) => {
     try {
-        const reqChart = await fetch(`${urlApi}/${currency}`);
-        const dataChart = await reqChart.json();
+        const myData = await getData(`${urlBase}/${currency}`);
+        const serieToChart = myData.serie.slice(0, 10);
 
-        const serieToChart = dataChart.serie.slice(0, 10);
-        console.log(serieToChart);
-
- // crear grafico
         const data = {
             labels: serieToChart.map((item) => item.fecha.substring(0, 10)),
             datasets: [{
@@ -59,38 +55,32 @@ const drawChart = async (currency) => {
                 tension: 0.1
             }]
         };
+
         const config = {
             type: 'line',
             data: data,
         };
 
-        showgraph += `<canvas id="chart"></canvas>`
+        showgraph = '<canvas id="chart"></canvas>';
         grafico.innerHTML = showgraph;
         showgraph = '';
-        new Chart(document.getElementById('chart'),config);
-
-
+        new Chart(document.getElementById('chart'), config);
     } catch (error) {
-        alert('Error al Obtener Gráfico')
+        alert('Error al obtener el Gráfico');
         console.log(error);
     }
+};
 
-}
-//escuchar
-document.querySelector('#btnConvert').addEventListener('click', () => {
-    const amountPesos = document.querySelector('#pesos').value;
-    if (amountPesos === '') {
-        alert('Debe ingresar un numero en Pesos-CLP');
-        return;
-    }
+convertButton.addEventListener('click', async () => {
+    const amountPesos = pesos.value;
+    if (amountPesos === '') return alert('Debe ingresar un número en Pesos-CLP');
+
     const currencySelected = selectWithCurrencies.value;
     const codeCurrencySelected =
-        selectWithCurrencies.options[selectWithCurrencies.selectedIndex
-        ].text.toLowerCase();
+        selectWithCurrencies.options[selectWithCurrencies.selectedIndex].text.toLowerCase();
 
     calcResult(amountPesos, currencySelected);
-    drawChart(codeCurrencySelected);
+    await drawChart(codeCurrencySelected);
 });
-
 
 getCurrencies();
