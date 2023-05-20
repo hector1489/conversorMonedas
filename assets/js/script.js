@@ -84,3 +84,11 @@ convertButton.addEventListener('click', async () => {
 });
 
 getCurrencies();
+
+
+/*
+ordenar
+optimice el if
+agrupar variables: div result. selectwithcurrencies.grafico
+extraje propiedades del codigo y valor en get currency cambio restData por myData
+*/
