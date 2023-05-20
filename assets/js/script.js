@@ -89,6 +89,8 @@ getCurrencies();
 /*
 ordenar
 optimice el if
+cambio de lugar fetch para llamrlo una vez
 agrupar variables: div result. selectwithcurrencies.grafico
-extraje propiedades del codigo y valor en get currency cambio restData por myData
+extraje propiedades del codigo y valor en get currency
+cambio restData por myData
 */
